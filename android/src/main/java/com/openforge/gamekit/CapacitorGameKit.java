@@ -207,6 +207,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     @PluginMethod()
     public showAllLeaderboards(final PluginCall call) {
+        saveCall(call);
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Intent allLeaderboardsIntent = Games.Leaderboards.getAllLeaderboardsIntent(gameHelper.getApiClient());
@@ -220,6 +221,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     @PluginMethod()
     public showLeaderboard(final PluginCall call) {
+        saveCall(call);
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
@@ -238,6 +240,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     @PluginMethod()
     public showAchievements(final PluginCall call) {
+        saveCall(call);
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Intent achievementsIntent = Games.Achievements.getAchievementsIntent(gameHelper.getApiClient());
@@ -379,6 +382,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     @Override
     protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
-        gameHelper.onActivityResult(requestCode, resultCode, intent);
+      super.handleOnActivityResult(requestCode, resultCode, data);
+      gameHelper.onActivityResult(requestCode, resultCode, intent);
     }
 }
