@@ -57,23 +57,6 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     private static final String LOGTAG = "openforge-CapacitorGameKit";
 
-    private static final String ACTION_AUTH = "auth";
-    private static final String ACTION_SIGN_OUT = "signOut";
-    private static final String ACTION_IS_SIGNEDIN = "isSignedIn";
-
-    private static final String ACTION_SUBMIT_SCORE = "submitScore";
-    private static final String ACTION_SUBMIT_SCORE_NOW = "submitScoreNow";
-    private static final String ACTION_GET_PLAYER_SCORE = "getPlayerScore";
-    private static final String ACTION_SHOW_ALL_LEADERBOARDS = "showAllLeaderboards";
-    private static final String ACTION_SHOW_LEADERBOARD = "showLeaderboard";
-
-    private static final String ACTION_UNLOCK_ACHIEVEMENT = "unlockAchievement";
-    private static final String ACTION_UNLOCK_ACHIEVEMENT_NOW = "unlockAchievementNow";
-    private static final String ACTION_INCREMENT_ACHIEVEMENT = "incrementAchievement";
-    private static final String ACTION_INCREMENT_ACHIEVEMENT_NOW = "incrementAchievementNow";
-    private static final String ACTION_SHOW_ACHIEVEMENTS = "showAchievements";
-    private static final String ACTION_SHOW_PLAYER = "showPlayer";
-
     private static final int ACTIVITY_CODE_SHOW_LEADERBOARD = 0;
     private static final int ACTIVITY_CODE_SHOW_ACHIEVEMENTS = 1;
 
