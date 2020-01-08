@@ -353,4 +353,14 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
       super.handleOnActivityResult(requestCode, resultCode, data);
       gameHelper.onActivityResult(requestCode, resultCode, intent);
     }
+
+    @Override
+    public void onSignInSucceeded() {
+        // TODO: handle onSignInSucceeded
+    }
+
+    @Override
+    public void onSignInFailed() {
+        // TODO: handle onSignInFailed
+    }
 }
