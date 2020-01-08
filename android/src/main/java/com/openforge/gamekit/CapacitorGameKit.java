@@ -105,90 +105,75 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     @PluginMethod()
     public void submitScore(final PluginCall call) {
         checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                Games.Leaderboards.submitScore(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
-                JSObject res = new JSObject();
-                res.put("executeSubmitScore", "score submitted successfully");
-                call.success(res);
-            } else {
-                call.error("executeSubmitScore: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeSubmitScore: unexpected error", e);
-            call.error("executeSubmitScore: error while submitting score");
+        if (gameHelper.isSignedIn()) {
+            Games.Leaderboards.submitScore(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
+            JSObject res = new JSObject();
+            res.put("executeSubmitScore", "score submitted successfully");
+            call.success(res);
+        } else {
+            call.error("executeSubmitScore: not yet signed in");
         }
     }
 
     @PluginMethod()
     public void submitScoreNow(final PluginCall call) {
         checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                PendingResult<Leaderboards.SubmitScoreResult> result = Games.Leaderboards.submitScoreImmediate(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
-                result.setResultCallback(new ResultCallback<Leaderboards.SubmitScoreResult>() {
-                    @Override
-                    public void onResult(Leaderboards.SubmitScoreResult submitScoreResult) {
-                        if (submitScoreResult.getStatus().isSuccess()) {
-                            ScoreSubmissionData scoreSubmissionData = submitScoreResult.getScoreData();
+        if (gameHelper.isSignedIn()) {
+            PendingResult<Leaderboards.SubmitScoreResult> result = Games.Leaderboards.submitScoreImmediate(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
+            result.setResultCallback(new ResultCallback<Leaderboards.SubmitScoreResult>() {
+                @Override
+                public void onResult(Leaderboards.SubmitScoreResult submitScoreResult) {
+                    if (submitScoreResult.getStatus().isSuccess()) {
+                        ScoreSubmissionData scoreSubmissionData = submitScoreResult.getScoreData();
 
-                            if (scoreSubmissionData != null) {
-                                ScoreSubmissionData.Result scoreResult = scoreSubmissionData.getScoreResult(LeaderboardVariant.TIME_SPAN_ALL_TIME);
-                                JSObject result = new JSObject();
-                                result.put("leaderboardId", scoreSubmissionData.getLeaderboardId());
-                                result.put("playerId", scoreSubmissionData.getPlayerId());
-                                result.put("formattedScore", scoreResult.formattedScore);
-                                result.put("newBest", scoreResult.newBest);
-                                result.put("rawScore", scoreResult.rawScore);
-                                result.put("scoreTag", scoreResult.scoreTag);
-                                call.success(result);
-                            } else {
-                                call.error("executeSubmitScoreNow: can't submit the score");
-                            }
+                        if (scoreSubmissionData != null) {
+                            ScoreSubmissionData.Result scoreResult = scoreSubmissionData.getScoreResult(LeaderboardVariant.TIME_SPAN_ALL_TIME);
+                            JSObject result = new JSObject();
+                            result.put("leaderboardId", scoreSubmissionData.getLeaderboardId());
+                            result.put("playerId", scoreSubmissionData.getPlayerId());
+                            result.put("formattedScore", scoreResult.formattedScore);
+                            result.put("newBest", scoreResult.newBest);
+                            result.put("rawScore", scoreResult.rawScore);
+                            result.put("scoreTag", scoreResult.scoreTag);
+                            call.success(result);
                         } else {
-                            call.error("executeSubmitScoreNow error: " + submitScoreResult.getStatus().getStatusMessage());
+                            call.error("executeSubmitScoreNow: can't submit the score");
                         }
+                    } else {
+                        call.error("executeSubmitScoreNow error: " + submitScoreResult.getStatus().getStatusMessage());
                     }
-                });
-            } else {
-                call.error("executeSubmitScoreNow: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeSubmitScoreNow: unexpected error", e);
-            call.error("executeSubmitScoreNow: error while submitting score");
+                }
+            });
+        } else {
+            call.error("executeSubmitScoreNow: not yet signed in");
         }
     }
 
     @PluginMethod()
     public void getPlayerScore(final PluginCall call) {
         checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                PendingResult<Leaderboards.LoadPlayerScoreResult> result = Games.Leaderboards.loadCurrentPlayerLeaderboardScore(gameHelper.getApiClient(), call.getString("leaderboardId"), LeaderboardVariant.TIME_SPAN_ALL_TIME, LeaderboardVariant.COLLECTION_PUBLIC);
-                result.setResultCallback(new ResultCallback<Leaderboards.LoadPlayerScoreResult>() {
-                    @Override
-                    public void onResult(Leaderboards.LoadPlayerScoreResult playerScoreResult) {
-                        if (playerScoreResult.getStatus().isSuccess()) {
-                            LeaderboardScore score = playerScoreResult.getScore();
+        if (gameHelper.isSignedIn()) {
+            PendingResult<Leaderboards.LoadPlayerScoreResult> result = Games.Leaderboards.loadCurrentPlayerLeaderboardScore(gameHelper.getApiClient(), call.getString("leaderboardId"), LeaderboardVariant.TIME_SPAN_ALL_TIME, LeaderboardVariant.COLLECTION_PUBLIC);
+            result.setResultCallback(new ResultCallback<Leaderboards.LoadPlayerScoreResult>() {
+                @Override
+                public void onResult(Leaderboards.LoadPlayerScoreResult playerScoreResult) {
+                    if (playerScoreResult.getStatus().isSuccess()) {
+                        LeaderboardScore score = playerScoreResult.getScore();
 
-                            if (score != null) {
-                                JSObject result = new JSObject();
-                                result.put("playerScore", score.getRawScore());
-                                call.success(result);
-                            } else {
-                                call.error("There isn't have any score record for this player");
-                            }
+                        if (score != null) {
+                            JSObject result = new JSObject();
+                            result.put("playerScore", score.getRawScore());
+                            call.success(result);
                         } else {
-                            call.error("executeGetPlayerScore error: " + playerScoreResult.getStatus().getStatusMessage());
+                            call.error("There isn't have any score record for this player");
                         }
+                    } else {
+                        call.error("executeGetPlayerScore error: " + playerScoreResult.getStatus().getStatusMessage());
                     }
-                });
-            } else {
-                call.error("executeGetPlayerScore: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeGetPlayerScore: unexpected error", e);
-            call.error("executeGetPlayerScore: error while retrieving score");
+                }
+            });
+        } else {
+            call.error("executeGetPlayerScore: not yet signed in");
         }
     }
 
@@ -210,18 +195,13 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     public void showLeaderboard(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                Intent leaderboardIntent = Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), call.getString("leaderboardId"));
-                startActivityForResult(call, leaderboardIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
-                call.success();
-            } else {
-                Log.w(LOGTAG, "executeShowLeaderboard: not yet signed in");
-                call.error("executeShowLeaderboard: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeShowLeaderboard: unexpected error", e);
-            call.error("executeShowLeaderboard: error while showing specific leaderboard");
+        if (gameHelper.isSignedIn()) {
+            Intent leaderboardIntent = Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), call.getString("leaderboardId"));
+            startActivityForResult(call, leaderboardIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
+            call.success();
+        } else {
+            Log.w(LOGTAG, "executeShowLeaderboard: not yet signed in");
+            call.error("executeShowLeaderboard: not yet signed in");
         }
     }
 
