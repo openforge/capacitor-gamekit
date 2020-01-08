@@ -97,14 +97,9 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     @PluginMethod()
     public void isSignedIn(final PluginCall call) {
         checkGameHelper(call);
-        try {
-            JSONObject result = new JSONObject();
-            result.put("isSignedIn", gameHelper.isSignedIn());
-            call.success(result);
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeIsSignedIn: unable to determine if user is signed in or not", e);
-            call.error("executeIsSignedIn: unable to determine if user is signed in or not");
-        }
+        JSObject result = new JSObject();
+        result.put("isSignedIn", gameHelper.isSignedIn());
+        call.success(result);
     }
 
     @PluginMethod()
@@ -136,20 +131,15 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                             ScoreSubmissionData scoreSubmissionData = submitScoreResult.getScoreData();
 
                             if (scoreSubmissionData != null) {
-                                try {
-                                    ScoreSubmissionData.Result scoreResult = scoreSubmissionData.getScoreResult(LeaderboardVariant.TIME_SPAN_ALL_TIME);
-                                    JSONObject result = new JSONObject();
-                                    result.put("leaderboardId", scoreSubmissionData.getLeaderboardId());
-                                    result.put("playerId", scoreSubmissionData.getPlayerId());
-                                    result.put("formattedScore", scoreResult.formattedScore);
-                                    result.put("newBest", scoreResult.newBest);
-                                    result.put("rawScore", scoreResult.rawScore);
-                                    result.put("scoreTag", scoreResult.scoreTag);
-                                    call.success(result);
-                                } catch (JSONException e) {
-                                    Log.w(LOGTAG, "executeSubmitScoreNow: unexpected error", e);
-                                    call.error("executeSubmitScoreNow: error while submitting score");
-                                }
+                                ScoreSubmissionData.Result scoreResult = scoreSubmissionData.getScoreResult(LeaderboardVariant.TIME_SPAN_ALL_TIME);
+                                JSObject result = new JSObject();
+                                result.put("leaderboardId", scoreSubmissionData.getLeaderboardId());
+                                result.put("playerId", scoreSubmissionData.getPlayerId());
+                                result.put("formattedScore", scoreResult.formattedScore);
+                                result.put("newBest", scoreResult.newBest);
+                                result.put("rawScore", scoreResult.rawScore);
+                                result.put("scoreTag", scoreResult.scoreTag);
+                                call.success(result);
                             } else {
                                 call.error("executeSubmitScoreNow: can't submit the score");
                             }
@@ -180,14 +170,9 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                             LeaderboardScore score = playerScoreResult.getScore();
 
                             if (score != null) {
-                                try {
-                                    JSONObject result = new JSONObject();
-                                    result.put("playerScore", score.getRawScore());
-                                    call.success(result);
-                                } catch (JSONException e) {
-                                    Log.w(LOGTAG, "executeGetPlayerScore: unexpected error", e);
-                                    call.error("executeGetPlayerScore: error while retrieving score");
-                                }
+                                JSObject result = new JSObject();
+                                result.put("playerScore", score.getRawScore());
+                                call.success(result);
                             } else {
                                 call.error("There isn't have any score record for this player");
                             }
@@ -273,14 +258,9 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                     @Override
                     public void onResult(Achievements.UpdateAchievementResult achievementResult) {
                         if (achievementResult.getStatus().isSuccess()) {
-                            try {
-                                JSONObject result = new JSONObject();
-                                result.put("achievementId", achievementResult.getAchievementId());
-                                call.success(result);
-                            } catch (JSONException e) {
-                                Log.w(LOGTAG, "executeUnlockAchievementNow: unexpected error", e);
-                                call.error("executeUnlockAchievementNow: error while unlocking achievement");
-                            }
+                            JSObject result = new JSObject();
+                            result.put("achievementId", achievementResult.getAchievementId());
+                            call.success(result);
                         } else {
                             call.error("executeUnlockAchievementNow error: " + achievementResult.getStatus().getStatusMessage());
                         }
@@ -313,14 +293,9 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                     @Override
                     public void onResult(Achievements.UpdateAchievementResult achievementResult) {
                         if (achievementResult.getStatus().isSuccess()) {
-                            try {
-                                JSONObject result = new JSONObject();
-                                result.put("achievementId", achievementResult.getAchievementId());
-                                call.success(result);
-                            } catch (JSONException e) {
-                                Log.w(LOGTAG, "executeIncrementAchievementNow: unexpected error", e);
-                                call.error("executeIncrementAchievementNow: error while incrementing achievement");
-                            }
+                            JSObject result = new JSObject();
+                            result.put("achievementId", achievementResult.getAchievementId());
+                            call.success(result);
                         } else {
                             call.error("executeIncrementAchievementNow error: " + achievementResult.getStatus().getStatusMessage());
                         }
@@ -336,12 +311,11 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     @PluginMethod()
     public void showPlayer(final PluginCall call) {
         checkGameHelper(call);
-        try {
             if (gameHelper.isSignedIn()) {
 
                 Player player = Games.Players.getCurrentPlayer(gameHelper.getApiClient());
 
-                JSONObject playerJson = new JSONObject();
+                JSObject playerJson = new JSObject();
                 playerJson.put("displayName", player.getDisplayName());
                 playerJson.put("playerId", player.getPlayerId());
                 playerJson.put("title", player.getTitle());
@@ -354,11 +328,6 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                 Log.w(LOGTAG, "executeShowPlayer: not yet signed in");
                 call.error("executeShowPlayer: not yet signed in");
             }
-        }
-        catch(Exception e) {
-            Log.w(LOGTAG, "executeShowPlayer: Error providing player data", e);
-            call.error("executeShowPlayer: Error providing player data");
-        }
     }
 
     private void checkGameHelper(final PluginCall call) {
@@ -368,11 +337,11 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                     GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode) +
                     "'. Error Code: " + googlePlayServicesReturnCode));
 
-            JSONObject googlePlayError = new JSONObject();
+            JSObject googlePlayError = new JSObject();
             googlePlayError.put("errorCode", googlePlayServicesReturnCode);
             googlePlayError.put("errorString", GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
 
-            JSONObject result = new JSONObject();
+            JSObject result = new JSObject();
             result.put("googlePlayError", googlePlayError);
             call.error(result);
 
