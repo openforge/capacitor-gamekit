@@ -198,7 +198,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Intent allLeaderboardsIntent = Games.Leaderboards.getAllLeaderboardsIntent(gameHelper.getApiClient());
-            startActivityForResult(plugin, allLeaderboardsIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
+            startActivityForResult(call, allLeaderboardsIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
             call.success();
         } else {
             Log.w(LOGTAG, "executeShowAllLeaderboards: not yet signed in");
@@ -213,7 +213,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         try {
             if (gameHelper.isSignedIn()) {
                 Intent leaderboardIntent = Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), call.getString("leaderboardId"));
-                startActivityForResult(plugin, leaderboardIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
+                startActivityForResult(call, leaderboardIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
                 call.success();
             } else {
                 Log.w(LOGTAG, "executeShowLeaderboard: not yet signed in");
@@ -231,7 +231,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Intent achievementsIntent = Games.Achievements.getAchievementsIntent(gameHelper.getApiClient());
-            startActivityForResult(plugin, achievementsIntent, ACTIVITY_CODE_SHOW_ACHIEVEMENTS);
+            startActivityForResult(call, achievementsIntent, ACTIVITY_CODE_SHOW_ACHIEVEMENTS);
             call.success();
         } else {
             Log.w(LOGTAG, "executeShowAchievements: not yet signed in");
