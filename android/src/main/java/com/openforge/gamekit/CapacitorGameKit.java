@@ -66,7 +66,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     private int googlePlayServicesReturnCode;
 
     @Override
-    public load() {
+    public void load() {
         Activity activity = getActivity();
         googlePlayServicesReturnCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity);
 
@@ -81,21 +81,21 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public auth(final PluginCall call) {
+    public void auth(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
         gameHelper.beginUserInitiatedSignIn();
     }
 
     @PluginMethod()
-    public signOut(final PluginCall call) {
+    public void signOut(final PluginCall call) {
         checkGameHelper(call);
         gameHelper.signOut();
         call.success();
     }
 
     @PluginMethod()
-    public isSignedIn(final PluginCall call) {
+    public void isSignedIn(final PluginCall call) {
         checkGameHelper(call);
         try {
             JSONObject result = new JSONObject();
@@ -108,7 +108,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public submitScore(final PluginCall call) {
+    public void submitScore(final PluginCall call) {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
@@ -124,7 +124,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public submitScoreNow(final PluginCall call) {
+    public void submitScoreNow(final PluginCall call) {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
@@ -168,7 +168,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public getPlayerScore(final PluginCall call) {
+    public void getPlayerScore(final PluginCall call) {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
@@ -206,7 +206,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public showAllLeaderboards(final PluginCall call) {
+    public void showAllLeaderboards(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
@@ -220,7 +220,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public showLeaderboard(final PluginCall call) {
+    public void showLeaderboard(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
         try {
@@ -239,7 +239,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public showAchievements(final PluginCall call) {
+    public void showAchievements(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
@@ -253,7 +253,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public unlockAchievement(final PluginCall call) {
+    public void unlockAchievement(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Games.Achievements.unlock(gameHelper.getApiClient(), options.optString("achievementId"));
@@ -265,7 +265,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public unlockAchievementNow(final PluginCall call) {
+    public void unlockAchievementNow(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.unlockImmediate(gameHelper.getApiClient(), options.optString("achievementId"));
@@ -293,7 +293,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public incrementAchievement(final PluginCall call) {
+    public void incrementAchievement(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Games.Achievements.increment(gameHelper.getApiClient(), options.optString("achievementId"), options.optInt("numSteps"));
@@ -305,7 +305,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public incrementAchievementNow(final PluginCall call) {
+    public void incrementAchievementNow(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.incrementImmediate(gameHelper.getApiClient(), options.optString("achievementId"), options.optInt("numSteps"));
@@ -334,7 +334,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public showPlayer(final PluginCall call) {
+    public void showPlayer(final PluginCall call) {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
@@ -361,7 +361,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         }
     }
 
-    private checkGameHelper(final PluginCall call) {
+    private void checkGameHelper(final PluginCall call) {
         if (gameHelper == null) {
             Log.w(LOGTAG, String.format("Tried calling: '" + action + "', but error with GooglePlayServices"));
             Log.w(LOGTAG, String.format("GooglePlayServices not available. Error: '" +
