@@ -107,7 +107,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
-                Games.Leaderboards.submitScore(gameHelper.getApiClient(), options.getString("leaderboardId"), options.getInt("score"));
+                Games.Leaderboards.submitScore(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
                 call.success("executeSubmitScore: score submited successfully");
             } else {
                 call.error("executeSubmitScore: not yet signed in");
@@ -123,7 +123,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
-                PendingResult<Leaderboards.SubmitScoreResult> result = Games.Leaderboards.submitScoreImmediate(gameHelper.getApiClient(), options.getString("leaderboardId"), options.getInt("score"));
+                PendingResult<Leaderboards.SubmitScoreResult> result = Games.Leaderboards.submitScoreImmediate(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
                 result.setResultCallback(new ResultCallback<Leaderboards.SubmitScoreResult>() {
                     @Override
                     public void onResult(Leaderboards.SubmitScoreResult submitScoreResult) {
@@ -162,7 +162,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
-                PendingResult<Leaderboards.LoadPlayerScoreResult> result = Games.Leaderboards.loadCurrentPlayerLeaderboardScore(gameHelper.getApiClient(), options.getString("leaderboardId"), LeaderboardVariant.TIME_SPAN_ALL_TIME, LeaderboardVariant.COLLECTION_PUBLIC);
+                PendingResult<Leaderboards.LoadPlayerScoreResult> result = Games.Leaderboards.loadCurrentPlayerLeaderboardScore(gameHelper.getApiClient(), call.getString("leaderboardId"), LeaderboardVariant.TIME_SPAN_ALL_TIME, LeaderboardVariant.COLLECTION_PUBLIC);
                 result.setResultCallback(new ResultCallback<Leaderboards.LoadPlayerScoreResult>() {
                     @Override
                     public void onResult(Leaderboards.LoadPlayerScoreResult playerScoreResult) {
@@ -210,7 +210,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         checkGameHelper(call);
         try {
             if (gameHelper.isSignedIn()) {
-                Intent leaderboardIntent = Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), options.getString("leaderboardId"));
+                Intent leaderboardIntent = Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), call.getString("leaderboardId"));
                 startActivityForResult(plugin, leaderboardIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
                 call.success();
             } else {
@@ -241,7 +241,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     public void unlockAchievement(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            Games.Achievements.unlock(gameHelper.getApiClient(), options.optString("achievementId"));
+            Games.Achievements.unlock(gameHelper.getApiClient(), call.getString("achievementId"));
             call.success();
         } else {
             Log.w(LOGTAG, "executeUnlockAchievement: not yet signed in");
@@ -253,7 +253,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     public void unlockAchievementNow(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.unlockImmediate(gameHelper.getApiClient(), options.optString("achievementId"));
+            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.unlockImmediate(gameHelper.getApiClient(), call.getString("achievementId"));
             result.setResultCallback(new ResultCallback<Achievements.UpdateAchievementResult>() {
                     @Override
                     public void onResult(Achievements.UpdateAchievementResult achievementResult) {
@@ -276,7 +276,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     public void incrementAchievement(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            Games.Achievements.increment(gameHelper.getApiClient(), options.optString("achievementId"), options.optInt("numSteps"));
+            Games.Achievements.increment(gameHelper.getApiClient(), call.getString("achievementId"), call.getInt("numSteps"));
             call.success();
         } else {
             Log.w(LOGTAG, "executeIncrementAchievement: not yet signed in");
@@ -288,7 +288,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     public void incrementAchievementNow(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.incrementImmediate(gameHelper.getApiClient(), options.optString("achievementId"), options.optInt("numSteps"));
+            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.incrementImmediate(gameHelper.getApiClient(), call.getString("achievementId"), call.getInt("numSteps"));
             result.setResultCallback(new ResultCallback<Achievements.UpdateAchievementResult>() {
                     @Override
                     public void onResult(Achievements.UpdateAchievementResult achievementResult) {
