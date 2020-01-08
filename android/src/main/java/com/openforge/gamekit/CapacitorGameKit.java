@@ -339,7 +339,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                     GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode) +
                     "'. Error Code: " + googlePlayServicesReturnCode));
 
-            call.error("googlePlayError", googlePlayServicesReturnCode, GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
+            call.error("googlePlayError" + '\n' + googlePlayServicesReturnCode + '\n' + GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
         }
     }
 
