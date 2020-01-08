@@ -334,7 +334,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     private void checkGameHelper(final PluginCall call) {
         if (gameHelper == null) {
-            Log.w(LOGTAG, String.format("Tried calling: '" + action + "', but error with GooglePlayServices"));
+            Log.w(LOGTAG, String.format("Tried calling: '" + call.getMethodName() + "', but error with GooglePlayServices"));
             Log.w(LOGTAG, String.format("GooglePlayServices not available. Error: '" +
                     GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode) +
                     "'. Error Code: " + googlePlayServicesReturnCode));
