@@ -2,20 +2,9 @@ package com.openforge.gamekit;
 
 import com.openforge.gamekit.GameHelper.GameHelperListener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
 import com.getcapacitor.JSObject;
@@ -24,34 +13,15 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Result;
 
 import com.google.android.gms.games.Games;
-import com.google.android.gms.games.GamesStatusCodes;
-import com.google.android.gms.games.GamesActivityResultCodes;
-import com.google.android.gms.games.GamesCallbackStatusCodes;
-import com.google.android.gms.games.GamesClient;
-import com.google.android.gms.games.GamesClientStatusCodes;
-import com.google.android.gms.games.InvitationsClient;
 import com.google.android.gms.games.Player;
-import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.leaderboard.*;
 import com.google.android.gms.games.achievement.*;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
 @NativePlugin()
 public class CapacitorGameKit extends Plugin implements GameHelperListener {
