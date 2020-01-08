@@ -62,7 +62,6 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     private GameHelper gameHelper;
 
-    private CallbackContext authCallbackContext;
     private int googlePlayServicesReturnCode;
 
     @Override
