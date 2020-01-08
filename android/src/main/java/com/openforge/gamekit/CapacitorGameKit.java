@@ -35,8 +35,8 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     private int googlePlayServicesReturnCode;
 
-    @Override
-    public void load() {
+    @PluginMethod
+    public void load(final PluginCall call) {
         Activity activity = getActivity();
         googlePlayServicesReturnCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity);
 
