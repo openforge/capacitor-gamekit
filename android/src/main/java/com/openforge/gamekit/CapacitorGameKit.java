@@ -108,7 +108,9 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
         try {
             if (gameHelper.isSignedIn()) {
                 Games.Leaderboards.submitScore(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
-                call.success("executeSubmitScore: score submited successfully");
+                JSObject res = new JSObject();
+                res.put("executeSubmitScore", "score submitted successfully");
+                call.success(res);
             } else {
                 call.error("executeSubmitScore: not yet signed in");
             }
@@ -337,15 +339,7 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                     GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode) +
                     "'. Error Code: " + googlePlayServicesReturnCode));
 
-            JSObject googlePlayError = new JSObject();
-            googlePlayError.put("errorCode", googlePlayServicesReturnCode);
-            googlePlayError.put("errorString", GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
-
-            JSObject result = new JSObject();
-            result.put("googlePlayError", googlePlayError);
-            call.error(result);
-
-            return true;
+            call.error("googlePlayError", googlePlayServicesReturnCode, GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
         }
     }
 
