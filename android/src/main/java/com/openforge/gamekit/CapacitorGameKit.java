@@ -2,19 +2,9 @@ package com.openforge.gamekit;
 
 import com.openforge.gamekit.GameHelper.GameHelperListener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.content.Intent;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
 import com.getcapacitor.JSObject;
@@ -23,34 +13,15 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Result;
 
 import com.google.android.gms.games.Games;
-import com.google.android.gms.games.GamesStatusCodes;
-import com.google.android.gms.games.GamesActivityResultCodes;
-import com.google.android.gms.games.GamesCallbackStatusCodes;
-import com.google.android.gms.games.GamesClient;
-import com.google.android.gms.games.GamesClientStatusCodes;
-import com.google.android.gms.games.InvitationsClient;
 import com.google.android.gms.games.Player;
-import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.leaderboard.*;
 import com.google.android.gms.games.achievement.*;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
 @NativePlugin()
 public class CapacitorGameKit extends Plugin implements GameHelperListener {
@@ -62,11 +33,10 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     private GameHelper gameHelper;
 
-    private CallbackContext authCallbackContext;
     private int googlePlayServicesReturnCode;
 
-    @Override
-    public load() {
+    @PluginMethod
+    public void load(final PluginCall call) {
         Activity activity = getActivity();
         googlePlayServicesReturnCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity);
 
@@ -81,137 +51,109 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public auth(final PluginCall call) {
+    public void auth(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
         gameHelper.beginUserInitiatedSignIn();
     }
 
     @PluginMethod()
-    public signOut(final PluginCall call) {
+    public void signOut(final PluginCall call) {
         checkGameHelper(call);
         gameHelper.signOut();
         call.success();
     }
 
     @PluginMethod()
-    public isSignedIn(final PluginCall call) {
+    public void isSignedIn(final PluginCall call) {
         checkGameHelper(call);
-        try {
-            JSONObject result = new JSONObject();
-            result.put("isSignedIn", gameHelper.isSignedIn());
-            call.success(result);
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeIsSignedIn: unable to determine if user is signed in or not", e);
-            call.error("executeIsSignedIn: unable to determine if user is signed in or not");
+        JSObject result = new JSObject();
+        result.put("isSignedIn", gameHelper.isSignedIn());
+        call.success(result);
+    }
+
+    @PluginMethod()
+    public void submitScore(final PluginCall call) {
+        checkGameHelper(call);
+        if (gameHelper.isSignedIn()) {
+            Games.Leaderboards.submitScore(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
+            JSObject res = new JSObject();
+            res.put("executeSubmitScore", "score submitted successfully");
+            call.success(res);
+        } else {
+            call.error("executeSubmitScore: not yet signed in");
         }
     }
 
     @PluginMethod()
-    public submitScore(final PluginCall call) {
+    public void submitScoreNow(final PluginCall call) {
         checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                Games.Leaderboards.submitScore(gameHelper.getApiClient(), options.getString("leaderboardId"), options.getInt("score"));
-                call.success("executeSubmitScore: score submited successfully");
-            } else {
-                call.error("executeSubmitScore: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeSubmitScore: unexpected error", e);
-            call.error("executeSubmitScore: error while submitting score");
-        }
-    }
+        if (gameHelper.isSignedIn()) {
+            PendingResult<Leaderboards.SubmitScoreResult> result = Games.Leaderboards.submitScoreImmediate(gameHelper.getApiClient(), call.getString("leaderboardId"), call.getInt("score"));
+            result.setResultCallback(new ResultCallback<Leaderboards.SubmitScoreResult>() {
+                @Override
+                public void onResult(Leaderboards.SubmitScoreResult submitScoreResult) {
+                    if (submitScoreResult.getStatus().isSuccess()) {
+                        ScoreSubmissionData scoreSubmissionData = submitScoreResult.getScoreData();
 
-    @PluginMethod()
-    public submitScoreNow(final PluginCall call) {
-        checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                PendingResult<Leaderboards.SubmitScoreResult> result = Games.Leaderboards.submitScoreImmediate(gameHelper.getApiClient(), options.getString("leaderboardId"), options.getInt("score"));
-                result.setResultCallback(new ResultCallback<Leaderboards.SubmitScoreResult>() {
-                    @Override
-                    public void onResult(Leaderboards.SubmitScoreResult submitScoreResult) {
-                        if (submitScoreResult.getStatus().isSuccess()) {
-                            ScoreSubmissionData scoreSubmissionData = submitScoreResult.getScoreData();
-
-                            if (scoreSubmissionData != null) {
-                                try {
-                                    ScoreSubmissionData.Result scoreResult = scoreSubmissionData.getScoreResult(LeaderboardVariant.TIME_SPAN_ALL_TIME);
-                                    JSONObject result = new JSONObject();
-                                    result.put("leaderboardId", scoreSubmissionData.getLeaderboardId());
-                                    result.put("playerId", scoreSubmissionData.getPlayerId());
-                                    result.put("formattedScore", scoreResult.formattedScore);
-                                    result.put("newBest", scoreResult.newBest);
-                                    result.put("rawScore", scoreResult.rawScore);
-                                    result.put("scoreTag", scoreResult.scoreTag);
-                                    call.success(result);
-                                } catch (JSONException e) {
-                                    Log.w(LOGTAG, "executeSubmitScoreNow: unexpected error", e);
-                                    call.error("executeSubmitScoreNow: error while submitting score");
-                                }
-                            } else {
-                                call.error("executeSubmitScoreNow: can't submit the score");
-                            }
+                        if (scoreSubmissionData != null) {
+                            ScoreSubmissionData.Result scoreResult = scoreSubmissionData.getScoreResult(LeaderboardVariant.TIME_SPAN_ALL_TIME);
+                            JSObject result = new JSObject();
+                            result.put("leaderboardId", scoreSubmissionData.getLeaderboardId());
+                            result.put("playerId", scoreSubmissionData.getPlayerId());
+                            result.put("formattedScore", scoreResult.formattedScore);
+                            result.put("newBest", scoreResult.newBest);
+                            result.put("rawScore", scoreResult.rawScore);
+                            result.put("scoreTag", scoreResult.scoreTag);
+                            call.success(result);
                         } else {
-                            call.error("executeSubmitScoreNow error: " + submitScoreResult.getStatus().getStatusMessage());
+                            call.error("executeSubmitScoreNow: can't submit the score");
                         }
+                    } else {
+                        call.error("executeSubmitScoreNow error: " + submitScoreResult.getStatus().getStatusMessage());
                     }
-                });
-            } else {
-                call.error("executeSubmitScoreNow: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeSubmitScoreNow: unexpected error", e);
-            call.error("executeSubmitScoreNow: error while submitting score");
+                }
+            });
+        } else {
+            call.error("executeSubmitScoreNow: not yet signed in");
         }
     }
 
     @PluginMethod()
-    public getPlayerScore(final PluginCall call) {
+    public void getPlayerScore(final PluginCall call) {
         checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                PendingResult<Leaderboards.LoadPlayerScoreResult> result = Games.Leaderboards.loadCurrentPlayerLeaderboardScore(gameHelper.getApiClient(), options.getString("leaderboardId"), LeaderboardVariant.TIME_SPAN_ALL_TIME, LeaderboardVariant.COLLECTION_PUBLIC);
-                result.setResultCallback(new ResultCallback<Leaderboards.LoadPlayerScoreResult>() {
-                    @Override
-                    public void onResult(Leaderboards.LoadPlayerScoreResult playerScoreResult) {
-                        if (playerScoreResult.getStatus().isSuccess()) {
-                            LeaderboardScore score = playerScoreResult.getScore();
+        if (gameHelper.isSignedIn()) {
+            PendingResult<Leaderboards.LoadPlayerScoreResult> result = Games.Leaderboards.loadCurrentPlayerLeaderboardScore(gameHelper.getApiClient(), call.getString("leaderboardId"), LeaderboardVariant.TIME_SPAN_ALL_TIME, LeaderboardVariant.COLLECTION_PUBLIC);
+            result.setResultCallback(new ResultCallback<Leaderboards.LoadPlayerScoreResult>() {
+                @Override
+                public void onResult(Leaderboards.LoadPlayerScoreResult playerScoreResult) {
+                    if (playerScoreResult.getStatus().isSuccess()) {
+                        LeaderboardScore score = playerScoreResult.getScore();
 
-                            if (score != null) {
-                                try {
-                                    JSONObject result = new JSONObject();
-                                    result.put("playerScore", score.getRawScore());
-                                    call.success(result);
-                                } catch (JSONException e) {
-                                    Log.w(LOGTAG, "executeGetPlayerScore: unexpected error", e);
-                                    call.error("executeGetPlayerScore: error while retrieving score");
-                                }
-                            } else {
-                                call.error("There isn't have any score record for this player");
-                            }
+                        if (score != null) {
+                            JSObject result = new JSObject();
+                            result.put("playerScore", score.getRawScore());
+                            call.success(result);
                         } else {
-                            call.error("executeGetPlayerScore error: " + playerScoreResult.getStatus().getStatusMessage());
+                            call.error("There isn't have any score record for this player");
                         }
+                    } else {
+                        call.error("executeGetPlayerScore error: " + playerScoreResult.getStatus().getStatusMessage());
                     }
-                });
-            } else {
-                call.error("executeGetPlayerScore: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeGetPlayerScore: unexpected error", e);
-            call.error("executeGetPlayerScore: error while retrieving score");
+                }
+            });
+        } else {
+            call.error("executeGetPlayerScore: not yet signed in");
         }
     }
 
     @PluginMethod()
-    public showAllLeaderboards(final PluginCall call) {
+    public void showAllLeaderboards(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Intent allLeaderboardsIntent = Games.Leaderboards.getAllLeaderboardsIntent(gameHelper.getApiClient());
-            startActivityForResult(plugin, allLeaderboardsIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
+            startActivityForResult(call, allLeaderboardsIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
             call.success();
         } else {
             Log.w(LOGTAG, "executeShowAllLeaderboards: not yet signed in");
@@ -220,31 +162,26 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public showLeaderboard(final PluginCall call) {
+    public void showLeaderboard(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
-        try {
-            if (gameHelper.isSignedIn()) {
-                Intent leaderboardIntent = Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), options.getString("leaderboardId"));
-                startActivityForResult(plugin, leaderboardIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
-                call.success();
-            } else {
-                Log.w(LOGTAG, "executeShowLeaderboard: not yet signed in");
-                call.error("executeShowLeaderboard: not yet signed in");
-            }
-        } catch (JSONException e) {
-            Log.w(LOGTAG, "executeShowLeaderboard: unexpected error", e);
-            call.error("executeShowLeaderboard: error while showing specific leaderboard");
+        if (gameHelper.isSignedIn()) {
+            Intent leaderboardIntent = Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), call.getString("leaderboardId"));
+            startActivityForResult(call, leaderboardIntent, ACTIVITY_CODE_SHOW_LEADERBOARD);
+            call.success();
+        } else {
+            Log.w(LOGTAG, "executeShowLeaderboard: not yet signed in");
+            call.error("executeShowLeaderboard: not yet signed in");
         }
     }
 
     @PluginMethod()
-    public showAchievements(final PluginCall call) {
+    public void showAchievements(final PluginCall call) {
         saveCall(call);
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
             Intent achievementsIntent = Games.Achievements.getAchievementsIntent(gameHelper.getApiClient());
-            startActivityForResult(plugin, achievementsIntent, ACTIVITY_CODE_SHOW_ACHIEVEMENTS);
+            startActivityForResult(call, achievementsIntent, ACTIVITY_CODE_SHOW_ACHIEVEMENTS);
             call.success();
         } else {
             Log.w(LOGTAG, "executeShowAchievements: not yet signed in");
@@ -253,10 +190,10 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public unlockAchievement(final PluginCall call) {
+    public void unlockAchievement(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            Games.Achievements.unlock(gameHelper.getApiClient(), options.optString("achievementId"));
+            Games.Achievements.unlock(gameHelper.getApiClient(), call.getString("achievementId"));
             call.success();
         } else {
             Log.w(LOGTAG, "executeUnlockAchievement: not yet signed in");
@@ -265,22 +202,17 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public unlockAchievementNow(final PluginCall call) {
+    public void unlockAchievementNow(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.unlockImmediate(gameHelper.getApiClient(), options.optString("achievementId"));
+            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.unlockImmediate(gameHelper.getApiClient(), call.getString("achievementId"));
             result.setResultCallback(new ResultCallback<Achievements.UpdateAchievementResult>() {
                     @Override
                     public void onResult(Achievements.UpdateAchievementResult achievementResult) {
                         if (achievementResult.getStatus().isSuccess()) {
-                            try {
-                                JSONObject result = new JSONObject();
-                                result.put("achievementId", achievementResult.getAchievementId());
-                                call.success(result);
-                            } catch (JSONException e) {
-                                Log.w(LOGTAG, "executeUnlockAchievementNow: unexpected error", e);
-                                call.error("executeUnlockAchievementNow: error while unlocking achievement");
-                            }
+                            JSObject result = new JSObject();
+                            result.put("achievementId", achievementResult.getAchievementId());
+                            call.success(result);
                         } else {
                             call.error("executeUnlockAchievementNow error: " + achievementResult.getStatus().getStatusMessage());
                         }
@@ -293,10 +225,10 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public incrementAchievement(final PluginCall call) {
+    public void incrementAchievement(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            Games.Achievements.increment(gameHelper.getApiClient(), options.optString("achievementId"), options.optInt("numSteps"));
+            Games.Achievements.increment(gameHelper.getApiClient(), call.getString("achievementId"), call.getInt("numSteps"));
             call.success();
         } else {
             Log.w(LOGTAG, "executeIncrementAchievement: not yet signed in");
@@ -305,22 +237,17 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public incrementAchievementNow(final PluginCall call) {
+    public void incrementAchievementNow(final PluginCall call) {
         checkGameHelper(call);
         if (gameHelper.isSignedIn()) {
-            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.incrementImmediate(gameHelper.getApiClient(), options.optString("achievementId"), options.optInt("numSteps"));
+            PendingResult<Achievements.UpdateAchievementResult> result = Games.Achievements.incrementImmediate(gameHelper.getApiClient(), call.getString("achievementId"), call.getInt("numSteps"));
             result.setResultCallback(new ResultCallback<Achievements.UpdateAchievementResult>() {
                     @Override
                     public void onResult(Achievements.UpdateAchievementResult achievementResult) {
                         if (achievementResult.getStatus().isSuccess()) {
-                            try {
-                                JSONObject result = new JSONObject();
-                                result.put("achievementId", achievementResult.getAchievementId());
-                                call.success(result);
-                            } catch (JSONException e) {
-                                Log.w(LOGTAG, "executeIncrementAchievementNow: unexpected error", e);
-                                call.error("executeIncrementAchievementNow: error while incrementing achievement");
-                            }
+                            JSObject result = new JSObject();
+                            result.put("achievementId", achievementResult.getAchievementId());
+                            call.success(result);
                         } else {
                             call.error("executeIncrementAchievementNow error: " + achievementResult.getStatus().getStatusMessage());
                         }
@@ -334,14 +261,13 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
     }
 
     @PluginMethod()
-    public showPlayer(final PluginCall call) {
+    public void showPlayer(final PluginCall call) {
         checkGameHelper(call);
-        try {
             if (gameHelper.isSignedIn()) {
 
                 Player player = Games.Players.getCurrentPlayer(gameHelper.getApiClient());
 
-                JSONObject playerJson = new JSONObject();
+                JSObject playerJson = new JSObject();
                 playerJson.put("displayName", player.getDisplayName());
                 playerJson.put("playerId", player.getPlayerId());
                 playerJson.put("title", player.getTitle());
@@ -354,35 +280,32 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
                 Log.w(LOGTAG, "executeShowPlayer: not yet signed in");
                 call.error("executeShowPlayer: not yet signed in");
             }
-        }
-        catch(Exception e) {
-            Log.w(LOGTAG, "executeShowPlayer: Error providing player data", e);
-            call.error("executeShowPlayer: Error providing player data");
-        }
     }
 
-    private checkGameHelper(final PluginCall call) {
+    private void checkGameHelper(final PluginCall call) {
         if (gameHelper == null) {
-            Log.w(LOGTAG, String.format("Tried calling: '" + action + "', but error with GooglePlayServices"));
+            Log.w(LOGTAG, String.format("Tried calling: '" + call.getMethodName() + "', but error with GooglePlayServices"));
             Log.w(LOGTAG, String.format("GooglePlayServices not available. Error: '" +
                     GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode) +
                     "'. Error Code: " + googlePlayServicesReturnCode));
 
-            JSONObject googlePlayError = new JSONObject();
-            googlePlayError.put("errorCode", googlePlayServicesReturnCode);
-            googlePlayError.put("errorString", GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
-
-            JSONObject result = new JSONObject();
-            result.put("googlePlayError", googlePlayError);
-            call.error(result);
-
-            return true;
+            call.error("googlePlayError" + '\n' + googlePlayServicesReturnCode + '\n' + GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
         }
     }
 
     @Override
     protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
       super.handleOnActivityResult(requestCode, resultCode, data);
-      gameHelper.onActivityResult(requestCode, resultCode, intent);
+      gameHelper.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onSignInSucceeded() {
+        // TODO: handle onSignInSucceeded
+    }
+
+    @Override
+    public void onSignInFailed() {
+        // TODO: handle onSignInFailed
     }
 }
