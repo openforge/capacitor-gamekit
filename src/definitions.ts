@@ -5,7 +5,6 @@ declare module "@capacitor/core" {
 }
 
 export interface CapacitorGameKitPlugin {
-  load(): Promise<any>;
   auth(): Promise<any>;
   signOut(): Promise<any>;
   isSignedIn(): Promise<any>;

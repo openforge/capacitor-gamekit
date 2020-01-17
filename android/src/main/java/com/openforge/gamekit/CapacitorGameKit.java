@@ -26,7 +26,7 @@ import com.google.android.gms.games.achievement.*;
 @NativePlugin()
 public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
-    private static final String LOGTAG = "openforge-CapacitorGameKit";
+    private static final String LOGTAG = "OF-CapacitorGameKit";
 
     private static final int ACTIVITY_CODE_SHOW_LEADERBOARD = 0;
     private static final int ACTIVITY_CODE_SHOW_ACHIEVEMENTS = 1;
@@ -35,14 +35,17 @@ public class CapacitorGameKit extends Plugin implements GameHelperListener {
 
     private int googlePlayServicesReturnCode;
 
-    @PluginMethod
-    public void load(final PluginCall call) {
+    @Override
+    public void load() {
         Activity activity = getActivity();
         googlePlayServicesReturnCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity);
+
+        Log.w(LOGTAG, GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode));
 
         if (googlePlayServicesReturnCode == ConnectionResult.SUCCESS) {
             gameHelper = new GameHelper(activity, GameHelper.CLIENT_GAMES);
             gameHelper.setup(this);
+            Log.w(LOGTAG, "GameHelper loaded");
         } else {
             Log.w(LOGTAG, String.format("GooglePlayServices not available. Error: '" +
                     GoogleApiAvailability.getInstance().getErrorString(googlePlayServicesReturnCode) +
